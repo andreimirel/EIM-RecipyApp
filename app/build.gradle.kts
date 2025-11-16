@@ -1,11 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    // Plugin-ul KSP pentru procesarea adnotarilor Room
     id("com.google.devtools.ksp")
-    // Plugin-ul Google Services pentru Firebase
     id("com.google.gms.google-services")
-    // ADD THIS LINE
     id("com.google.dagger.hilt.android")
 }
 
@@ -36,7 +33,6 @@ android {
         }
     }
     compileOptions {
-        // Pastrat JavaVersion 11
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -44,7 +40,6 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
-        // Activeaza Jetpack Compose
         compose = true
     }
     composeOptions {
@@ -69,8 +64,16 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+
+    // Compose Animations
+    implementation("androidx.compose.animation:animation")
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.34.0")
+
+    // Palette API for color extraction
+    implementation("androidx.palette:palette-ktx:1.0.0")
 
     //  Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
@@ -95,11 +98,10 @@ dependencies {
     //  Incarcare Imagini (Coil)
     implementation("io.coil-kt:coil-compose:2.6.0")
 
-    // ADD THESE LINES for Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
-
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    ksp("com.google.dagger:hilt-compiler:2.50")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     //  Testare (Etapa 2)
     testImplementation("junit:junit:4.13.2")
