@@ -5,6 +5,8 @@ plugins {
     id("com.google.devtools.ksp")
     // Plugin-ul Google Services pentru Firebase
     id("com.google.gms.google-services")
+    // ADD THIS LINE
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -92,6 +94,12 @@ dependencies {
 
     //  Incarcare Imagini (Coil)
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // ADD THESE LINES for Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
 
     //  Testare (Etapa 2)
     testImplementation("junit:junit:4.13.2")
