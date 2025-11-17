@@ -58,9 +58,6 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     override fun getFavoriteMeals(): Flow<List<MealDetail>> {
-        // First, attempt to synchronize from Firebase to Room, then observe Room
-        // This ensures local cache is updated and provides offline access.
-        // The flow will emit changes from Room.
         return favoriteMealDao.getAllFavoriteMeals().map {
             it.map { entity ->
                 MealDetail(
@@ -77,7 +74,6 @@ class RecipeRepositoryImpl @Inject constructor(
         }
     }
 
-    // ADD THIS MISSING FUNCTION
     override suspend fun clearLocalFavorites() {
         favoriteMealDao.clearFavorites()
     }
