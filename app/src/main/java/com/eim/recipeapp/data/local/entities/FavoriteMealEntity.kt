@@ -17,9 +17,6 @@ data class FavoriteMealEntity(
     val ingredientsJson: String // Store ingredients as JSON string
 ) {
     fun toMealDetail(): MealDetail {
-        // This conversion will be handled with a TypeConverter or manually parsed JSON
-        // For now, let's keep it simple and assume we'll parse ingredientsJson later.
-        // Or, if not needed for simple display, just pass empty list.
         return MealDetail(
             mealId = mealId,
             name = name,
