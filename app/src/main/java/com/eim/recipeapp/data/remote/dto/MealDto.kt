@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName
 
 data class MealDto(
     @SerializedName("idMeal")
-    val idMeal: String?,
+    val idMeal: String,
     @SerializedName("strMeal")
-    val strMeal: String?,
+    val strMeal: String,
     @SerializedName("strMealThumb")
-    val strMealThumb: String?
-) {
-    fun toMeal(): Meal {
-        return Meal(
-            mealId = idMeal ?: "",
-            name = strMeal ?: "Unknown",
-            imageUrl = strMealThumb ?: ""
-        )
-    }
+    val strMealThumb: String
+)
+
+fun MealDto.toMeal(): Meal {
+    return Meal(
+        mealId = idMeal,
+        name = strMeal,
+        imageUrl = strMealThumb
+    )
 }

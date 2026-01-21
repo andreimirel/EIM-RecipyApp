@@ -5,33 +5,50 @@ import com.eim.recipeapp.data.local.dao.FavoriteMealDao
 import com.eim.recipeapp.data.local.entities.FavoriteMealEntity
 import com.eim.recipeapp.data.remote.FirebaseFavoritesManager
 import com.eim.recipeapp.data.remote.MealApi
+import com.eim.recipeapp.data.remote.NutritionApi
 import com.eim.recipeapp.data.remote.dto.FavoriteMealFirebaseDto
+import com.eim.recipeapp.data.remote.dto.toMeal
+import com.eim.recipeapp.data.remote.dto.nutrition.toNutritionItem
+import com.eim.recipeapp.data.remote.dto.toMealDetail
 import com.eim.recipeapp.domain.model.Meal
 import com.eim.recipeapp.domain.model.MealDetail
+import com.eim.recipeapp.domain.model.NutritionItem
 import com.eim.recipeapp.domain.repository.RecipeRepository
+import com.eim.recipeapp.utils.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class RecipeRepositoryImpl @Inject constructor(
-    private val api: MealApi,
+    private val mealApi: MealApi,
+    private val nutritionApi: NutritionApi, // Inject the new API
     private val favoriteMealDao: FavoriteMealDao,
-    private val firebaseFavoritesManager: FirebaseFavoritesManager // Inject Firebase Manager
+    private val firebaseFavoritesManager: FirebaseFavoritesManager
 ) : RecipeRepository {
 
     private val converters = Converters()
 
     override suspend fun searchMeals(query: String): List<Meal> {
-        return api.searchMeals(query).meals?.map { it.toMeal() } ?: emptyList()
+        return mealApi.searchMeals(query).meals?.map { it.toMeal() } ?: emptyList()
     }
 
     override suspend fun getMealDetail(mealId: String): MealDetail {
-        return api.lookupMealById(mealId).meals?.firstOrNull()?.toMealDetail()
+        return mealApi.getMealById(mealId).meals?.firstOrNull()?.toMealDetail()
             ?: throw Exception("Meal details not found for ID: $mealId")
     }
 
+    override suspend fun getNutritionInfo(query: String): Resource<List<NutritionItem>> {
+        return try {
+            val response = nutritionApi.getNutritionInfo(query)
+            // Extract the list of items from the response object
+            val nutritionItems = response.items.map { it.toNutritionItem() }
+            Resource.Success(nutritionItems)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "An unknown error occurred")
+        }
+    }
+
     override suspend fun addFavoriteMeal(mealDetail: MealDetail) {
-        // Add to Room
         val roomEntity = FavoriteMealEntity(
             mealId = mealDetail.mealId,
             name = mealDetail.name,
@@ -44,16 +61,12 @@ class RecipeRepositoryImpl @Inject constructor(
         )
         favoriteMealDao.insertFavoriteMeal(roomEntity)
 
-        // Add to Firebase
         val firebaseDto = FavoriteMealFirebaseDto.fromMealDetail(mealDetail)
         firebaseFavoritesManager.addFavorite(firebaseDto)
     }
 
     override suspend fun removeFavoriteMeal(mealId: String) {
-        // Remove from Room
         favoriteMealDao.deleteFavoriteMeal(mealId)
-
-        // Remove from Firebase
         firebaseFavoritesManager.removeFavorite(mealId)
     }
 
@@ -80,7 +93,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
     suspend fun syncFavoritesFromFirebaseToRoom() {
         val firebaseFavorites = firebaseFavoritesManager.getFavorites()
-        favoriteMealDao.clearFavorites() // Clear local before re-populating
+        favoriteMealDao.clearFavorites()
         firebaseFavorites.forEach { firebaseDto ->
             val roomEntity = FavoriteMealEntity(
                 mealId = firebaseDto.mealId,
@@ -99,7 +112,6 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isMealFavorite(mealId: String): Boolean {
-        // Check Room first for quick access
         return favoriteMealDao.isMealFavorite(mealId)
     }
 }
